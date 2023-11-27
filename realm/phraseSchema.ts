@@ -9,30 +9,64 @@ type TranslateParams = {
   sl: SourceLanguage;
   tl: TargetLanguage;
 };
-type GenerateParams = {
+interface GenerateParams {
   sText: string;
   group: string;
-  tags: string;
-};
-type FillParams = GenerateParams & {
+  tags: string[];
+}
+interface FillParams extends GenerateParams {
   tText: string;
   tRomanization: string;
   tSpeech64: string;
-};
+}
 // REALM OBJECT
-type PhraseObj = FillParams & {
+interface PhraseObj extends FillParams {
   _id: Realm.BSON.ObjectId;
   createdAt: Date;
-};
+}
 
 // CLASS
-class Phrase extends Realm.Object {
-  static async create(
+class Phrase extends Realm.Object implements PhraseObj {
+  sText!: string;
+  group!: string;
+  tags!: string[];
+  tText!: string;
+  tRomanization!: string;
+  tSpeech64!: string;
+  _id!: Realm.BSON.ObjectId;
+  createdAt!: Date;
+
+  /**
+   * Generate and fill in a PhraseObj from google translate api
+   * Then create PhraseObj in Realm
+   *
+   * @param realm
+   * @param tParams
+   * @param gParams
+   * @returns
+   */
+  static async createG(
     realm: Realm,
     tParams: TranslateParams,
     gParams: GenerateParams,
   ) {
     const phraseObj: PhraseObj = await this.generate(tParams, gParams);
+
+    return realm.write(() => {
+      realm.create(this.PHRASE_SCHEMA_NAME, phraseObj);
+    });
+  }
+
+  /**
+   * Fill in a PhraseObj from params
+   * Then create PhraseObj in Realm
+   *
+   * @param realm
+   * @param fParams
+   * @returns
+   */
+  static async createF(realm: Realm, fParams: FillParams) {
+    const phraseObj: PhraseObj = this.fill(fParams);
 
     return realm.write(() => {
       realm.create(this.PHRASE_SCHEMA_NAME, phraseObj);

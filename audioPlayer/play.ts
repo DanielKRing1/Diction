@@ -4,7 +4,7 @@ import {Audio} from 'expo-av';
 let soundObject: Audio.Sound = new Audio.Sound();
 export const play = async (audio64: string): Promise<void> => {
   // 1. Stop any sounds currently playing
-  stop();
+  await stop();
 
   // 2. Load and play sound
   try {
@@ -22,6 +22,10 @@ export const pause = async () => {
 };
 
 export const stop = async () => {
-  await soundObject.stopAsync();
-  await soundObject.unloadAsync();
+  try {
+    await soundObject.stopAsync();
+    await soundObject.unloadAsync();
+  } catch (err) {
+    console.error(err);
+  }
 };

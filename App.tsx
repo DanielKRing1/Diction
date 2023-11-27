@@ -28,7 +28,11 @@ import {
 import {getTTS} from './google-translate/tts';
 import {getTextTranslations} from './google-translate/ttt';
 import {play} from './audioPlayer/play';
+
 import RealmProvider from './components/app/RealmProvider';
+import {NavigationContainer} from '@react-navigation/native';
+import SaveTranslation from './screens/SaveTranslation';
+import ReadTranslations from './screens/ReadTranslations';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -88,17 +92,19 @@ function App(): JSX.Element {
   }, []);
 
   return (
-    <RealmProvider>
-      <SafeAreaView style={backgroundStyle}>
-        <StatusBar
-          barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-          backgroundColor={backgroundStyle.backgroundColor}
-        />
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          style={backgroundStyle}></ScrollView>
-      </SafeAreaView>
-    </RealmProvider>
+    // TODO: Complete Navigation -> https://reactnavigation.org/docs/hello-react-navigation
+    <NavigationContainer>
+      <RealmProvider>
+        <SafeAreaView style={backgroundStyle}>
+          <ScrollView
+            contentInsetAdjustmentBehavior="automatic"
+            style={backgroundStyle}>
+            <SaveTranslation />
+            <ReadTranslations />
+          </ScrollView>
+        </SafeAreaView>
+      </RealmProvider>
+    </NavigationContainer>
   );
 }
 
