@@ -2,112 +2,51 @@ import Realm, {ObjectSchema} from 'realm';
 import {getTTS} from '../google-translate/tts';
 import {getTextTranslations} from '../google-translate/ttt';
 import {SourceLanguage, TargetLanguage} from '../google-translate/types';
+import Flashcard, {FlashcardObj} from './FlashCardSchema';
 
 // TYPES
 // PARAMS
-type TranslateParams = {
+type FetchParams = {
   sl: SourceLanguage;
   tl: TargetLanguage;
 };
-interface GenerateParams {
-  sText: string;
-  group: string;
-  tags: string[];
-}
-interface FillParams extends GenerateParams {
+interface TranslationData {
   tText: string;
   tRomanization: string;
   tSpeech64: string;
 }
+
+interface GenerateParams extends TranslationData {
+  sText: string;
+
+  group: Realm.BSON.ObjectId;
+  tags: string[];
+}
+
 // REALM OBJECT
-interface PhraseObj extends FillParams {
+export interface PhraseObj extends GenerateParams {
   _id: Realm.BSON.ObjectId;
   createdAt: Date;
+
+  flashcard: FlashcardObj;
 }
 
 // CLASS
 class Phrase extends Realm.Object implements PhraseObj {
-  sText!: string;
-  group!: string;
-  tags!: string[];
-  tText!: string;
-  tRomanization!: string;
-  tSpeech64!: string;
   _id!: Realm.BSON.ObjectId;
   createdAt!: Date;
 
-  /**
-   * Generate and fill in a PhraseObj from google translate api
-   * Then create PhraseObj in Realm
-   *
-   * @param realm
-   * @param tParams
-   * @param gParams
-   * @returns
-   */
-  static async createG(
-    realm: Realm,
-    tParams: TranslateParams,
-    gParams: GenerateParams,
-  ) {
-    const phraseObj: PhraseObj = await this.generate(tParams, gParams);
+  sText!: string;
+  tText!: string;
+  tRomanization!: string;
+  tSpeech64!: string;
 
-    return realm.write(() => {
-      realm.create(this.PHRASE_SCHEMA_NAME, phraseObj);
-    });
-  }
+  group!: Realm.BSON.ObjectId;
+  tags!: string[];
 
-  /**
-   * Fill in a PhraseObj from params
-   * Then create PhraseObj in Realm
-   *
-   * @param realm
-   * @param fParams
-   * @returns
-   */
-  static async createF(realm: Realm, fParams: FillParams) {
-    const phraseObj: PhraseObj = this.fill(fParams);
+  flashcard!: FlashcardObj;
 
-    return realm.write(() => {
-      realm.create(this.PHRASE_SCHEMA_NAME, phraseObj);
-    });
-  }
-
-  private static async generate(
-    {sl, tl}: TranslateParams,
-    gParams: GenerateParams,
-  ): Promise<PhraseObj> {
-    // 1. Get text translations
-    const {tt, tr} = await getTextTranslations({
-      sl,
-      tl,
-      st: gParams.sText,
-      id: 1,
-    });
-    // 2. Get speech translations
-    const audio64 = await getTTS(tl, tt, 1);
-
-    // 3. Fill in Realm Object fields
-    const fillParams: FillParams = {
-      ...gParams,
-      tText: tt,
-      tRomanization: tr,
-      tSpeech64: audio64,
-    };
-
-    return this.fill(fillParams);
-  }
-
-  private static fill(params: FillParams): PhraseObj {
-    return {
-      // 1. Fill in default Realm Object fields
-      _id: new Realm.BSON.ObjectId(),
-      createdAt: new Date(),
-
-      // 2. Add known fields
-      ...params,
-    };
-  }
+  // SCHEMA
 
   static readonly PHRASE_SCHEMA_NAME = 'Phrase';
   static readonly schema: ObjectSchema = {
@@ -122,10 +61,82 @@ class Phrase extends Realm.Object implements PhraseObj {
       tRomanization: 'string',
       tSpeech64: 'string',
 
-      group: 'string',
+      groupId: 'objectId',
       tags: {type: 'list', objectType: 'string', default: () => []},
+
+      flashcard: Flashcard.FLASHCARD_SCHEMA_NAME, // embedded object
     },
   };
+
+  // IMPLEMENTATION
+
+  static setTags(realm: Realm, _id: Realm.BSON.ObjectId, newTags: string[]) {
+    realm.write(() => {
+      const phrase: Phrase | null = realm.objectForPrimaryKey<Phrase>(
+        this.PHRASE_SCHEMA_NAME,
+        _id,
+      );
+      if (phrase === null) return;
+
+      // Update tags
+      phrase.tags = newTags;
+    });
+  }
+
+  static async create(
+    realm: Realm,
+    fParams: FetchParams,
+    gParams: GenerateParams,
+  ): Promise<PhraseObj> {
+    const tData: TranslationData = await this.fetch(gParams.sText, fParams);
+    const phraseObj: PhraseObj = this.generate(tData, gParams);
+
+    return realm.write(() => {
+      return realm.create(this.PHRASE_SCHEMA_NAME, phraseObj);
+    });
+  }
+
+  private static async fetch(
+    st: string,
+    {sl, tl}: FetchParams,
+  ): Promise<TranslationData> {
+    // 1. Get text translations
+    const {tt, tr} = await getTextTranslations({
+      sl,
+      tl,
+      st,
+      id: 1,
+    });
+    // 2. Get speech translations
+    const audio64 = await getTTS(tl, tt, 1);
+
+    // 3. Return fetched translation data
+    return {
+      tText: tt,
+      tRomanization: tr,
+      tSpeech64: audio64,
+    };
+  }
+
+  private static generate(
+    tData: TranslationData,
+    gParams: GenerateParams,
+  ): PhraseObj {
+    return {
+      // 1. Fill in default Realm Object fields
+      _id: new Realm.BSON.ObjectId(),
+      createdAt: new Date(),
+
+      // 2. Fill in embedded Flashcard fields
+      flashcard: Flashcard.generate(),
+
+      // 3. Add fetched fields
+      ...tData,
+
+      // 4. Add user fields
+      ...gParams,
+    };
+  }
 }
 
 export default Phrase;
