@@ -1,6 +1,6 @@
 import Realm, {ObjectSchema} from 'realm';
 
-import Phrase, {PhraseObj} from './PhraseSchema';
+import Phrase from './PhraseSchema';
 import {RealmObject} from '.';
 
 // REALM OBJECT
@@ -66,13 +66,13 @@ class Group extends Realm.Object implements GroupObj {
     );
     if (groupObj === null) return;
 
-    // 2. Get associated PhraseObj's
-    const phraseObjs: Realm.Results<RealmObject<PhraseObj>> = realm
-      .objects<PhraseObj>(Phrase.PHRASE_SCHEMA_NAME)
+    // 2. Get associated Phrases
+    const phraseObjs: Realm.Results<RealmObject<Phrase>> = realm
+      .objects<Phrase>(Phrase.PHRASE_SCHEMA_NAME)
       .filtered('group = $0', groupId);
 
     realm.write(() => {
-      // 3. Delete PhraseObj's
+      // 3. Delete Phrases
       for (const phraseObj of phraseObjs) {
         realm.delete(phraseObj);
       }

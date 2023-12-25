@@ -150,7 +150,7 @@ class Phrase extends Realm.Object implements PhraseObj {
   }
 
   static delete(realm: Realm, phraseId: Realm.BSON.ObjectId) {
-    // 1. Get PhraseObj
+    // 1. Get Phrase
     const phraseObj: PhraseObj | null = realm.objectForPrimaryKey(
       this.PHRASE_SCHEMA_NAME,
       phraseId,
