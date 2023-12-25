@@ -77,14 +77,8 @@ class Phrase extends Realm.Object implements PhraseObj {
 
   // IMPLEMENTATION
 
-  static setTags(realm: Realm, _id: Realm.BSON.ObjectId, newTags: string[]) {
+  static setTags(realm: Realm, phrase: Phrase, newTags: string[]) {
     realm.write(() => {
-      const phrase: Phrase | null = realm.objectForPrimaryKey<Phrase>(
-        this.PHRASE_SCHEMA_NAME,
-        _id,
-      );
-      if (phrase === null) return;
-
       // Update tags
       phrase.tags = newTags;
     });
@@ -149,17 +143,10 @@ class Phrase extends Realm.Object implements PhraseObj {
     };
   }
 
-  static delete(realm: Realm, phraseId: Realm.BSON.ObjectId) {
-    // 1. Get Phrase
-    const phraseObj: PhraseObj | null = realm.objectForPrimaryKey(
-      this.PHRASE_SCHEMA_NAME,
-      phraseId,
-    );
-    if (phraseId === null) return;
-
+  static delete(realm: Realm, phrase: Phrase) {
     realm.write(() => {
-      // 2. Delete PhraseObj
-      realm.delete(phraseObj);
+      // 1. Delete PhraseObj
+      realm.delete(phrase);
     });
   }
 }

@@ -31,7 +31,7 @@ const GroupUIComponent: ListRenderItem<Group> = (info: InfoProps) => {
   };
 
   const handleDelete = () => {
-    Group.delete(realm, group._id);
+    Group.delete(realm, group);
   };
 
   return (

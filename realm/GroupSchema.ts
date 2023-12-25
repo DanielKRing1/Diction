@@ -58,27 +58,20 @@ class Group extends Realm.Object implements GroupObj {
     };
   }
 
-  static delete(realm: Realm, groupId: Realm.BSON.ObjectId) {
-    // 1. Get GroupObj
-    const groupObj: GroupObj | null = realm.objectForPrimaryKey(
-      this.GROUP_SCHEMA_NAME,
-      groupId,
-    );
-    if (groupObj === null) return;
-
-    // 2. Get associated Phrases
-    const phraseObjs: Realm.Results<RealmObject<Phrase>> = realm
+  static delete(realm: Realm, group: Group) {
+    // 1. Get associated Phrases
+    const phrases: Realm.Results<RealmObject<Phrase>> = realm
       .objects<Phrase>(Phrase.PHRASE_SCHEMA_NAME)
-      .filtered('group = $0', groupId);
+      .filtered('group = $0', group._id);
 
     realm.write(() => {
-      // 3. Delete Phrases
-      for (const phraseObj of phraseObjs) {
-        realm.delete(phraseObj);
+      // 2. Delete Phrases
+      for (const p of phrases) {
+        realm.delete(p);
       }
 
-      // 4. Delete GroupObj
-      realm.delete(groupObj);
+      // 3. Delete GroupObj
+      realm.delete(group);
     });
   }
 

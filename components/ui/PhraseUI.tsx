@@ -66,11 +66,11 @@ const PhraseUIComponent: ListRenderItem<Phrase> = (info: InfoProps) => {
   };
   const handleSaveTags = () => {
     const newTags = tagsStr.split(', ');
-    Phrase.setTags(realm, phrase._id, newTags);
+    Phrase.setTags(realm, phrase, newTags);
   };
 
   const handleDelete = () => {
-    Phrase.delete(realm, phrase._id);
+    Phrase.delete(realm, phrase);
   };
 
   // AUDIO HANDLERS
