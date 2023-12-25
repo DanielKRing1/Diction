@@ -6,63 +6,23 @@
  */
 
 import React, {useEffect} from 'react';
-import type {PropsWithChildren} from 'react';
 import {
   SafeAreaView,
-  ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   useColorScheme,
   View,
 } from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import {Colors} from 'react-native/Libraries/NewAppScreen';
 
 import {getTTS} from './google-translate/tts';
 import {getTextTranslations} from './google-translate/ttt';
-import {play} from './audioPlayer/play';
 
 import RealmProvider from './components/app/RealmProvider';
 import {NavigationContainer} from '@react-navigation/native';
-import SaveTranslation from './screens/SaveTranslation';
-import ReadTranslations from './screens/ReadTranslations';
-
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+import Entry from './screens';
+import {GroupProvider} from './context/GroupContext';
 
 function App(): JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
@@ -86,8 +46,8 @@ function App(): JSX.Element {
       console.log(tt);
       console.log(tr);
       const audio64 = await getTTS(tl, tt, 1);
-      console.log(audio64);
-      play(audio64);
+      // console.log(audio64);
+      // play(audio64);
     })();
   }, []);
 
@@ -95,14 +55,22 @@ function App(): JSX.Element {
     // TODO: Complete Navigation -> https://reactnavigation.org/docs/hello-react-navigation
     <NavigationContainer>
       <RealmProvider>
-        <SafeAreaView style={backgroundStyle}>
-          <ScrollView
-            contentInsetAdjustmentBehavior="automatic"
-            style={backgroundStyle}>
-            <SaveTranslation />
-            <ReadTranslations />
-          </ScrollView>
-        </SafeAreaView>
+        <GroupProvider>
+          <SafeAreaView style={{backgroundColor: 'darkgrey'}}>
+            <View
+              style={{
+                backgroundColor: 'white',
+                borderRadius: 8,
+                padding: 35,
+                elevation: 20,
+                shadowColor: 'black',
+              }}>
+              <Text>Helloooo</Text>
+            </View>
+
+            <Entry />
+          </SafeAreaView>
+        </GroupProvider>
       </RealmProvider>
     </NavigationContainer>
   );

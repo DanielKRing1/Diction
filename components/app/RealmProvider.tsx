@@ -1,10 +1,12 @@
-import {PropertySchema} from 'realm';
 import {RealmProvider} from '@realm/react';
-import Phrase from '../../realm/phraseSchema';
+
+import Group from '../../realm/GroupSchema';
+import Phrase from '../../realm/PhraseSchema';
+import Flashcard from '../../realm/FlashCardSchema';
 
 type Props = {
   children: React.ReactNode;
 };
 export default ({children}: Props) => (
-  <RealmProvider schema={[Phrase]}>{children}</RealmProvider>
+  <RealmProvider schema={[Group, Phrase, Flashcard]}>{children}</RealmProvider>
 );

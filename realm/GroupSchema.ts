@@ -8,20 +8,16 @@ export interface GroupObj {
   _id: Realm.BSON.ObjectId;
   createdAt: Date;
 
-  lastUpdated: Date;
-  lastUsed: Date;
-
   name: string;
+  lastUsed: Date;
 }
 
 class Group extends Realm.Object implements GroupObj {
   _id!: Realm.BSON.ObjectId;
   createdAt!: Date;
 
-  lastUpdated!: Date;
-  lastUsed!: Date;
-
   name!: string;
+  lastUsed!: Date;
 
   // SCHEMA
 
@@ -33,10 +29,8 @@ class Group extends Realm.Object implements GroupObj {
       _id: {type: 'objectId', default: () => new Realm.BSON.ObjectId()},
       createdAt: {type: 'date', default: () => new Date()},
 
-      lastUpdated: {type: 'date', default: () => new Date()},
-      lastUsed: {type: 'date', default: () => new Date()},
-
       name: 'string',
+      lastUsed: {type: 'date', default: () => new Date()},
     },
   };
 
@@ -58,11 +52,9 @@ class Group extends Realm.Object implements GroupObj {
       _id: new Realm.BSON.ObjectId(),
       createdAt: new Date(),
 
-      lastUpdated: new Date(),
-      lastUsed: new Date(),
-
       // 2. Add user fields
       name,
+      lastUsed: new Date(),
     };
   }
 
@@ -89,6 +81,9 @@ class Group extends Realm.Object implements GroupObj {
       realm.delete(groupObj);
     });
   }
+
+  // TODO: Implement
+  static updateLastUsed(realm: Realm, groupId: Realm.BSON.ObjectId) {}
 }
 
 export default Group;

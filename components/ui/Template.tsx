@@ -5,7 +5,7 @@ type Props = {};
 export default (props: Props) => {
   return (
     <View>
-      <Text>Choose Translation Group Screen</Text>
+      <Text>Template</Text>
     </View>
   );
 };

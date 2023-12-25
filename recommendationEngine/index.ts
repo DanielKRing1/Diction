@@ -20,12 +20,15 @@ export default (
     const phrase: RealmObject<PhraseObj> = filteredPhrases[i];
 
     // 3. Update oldestTime
-    oldestTime = Math.min(phrase.flashcard.lastReviewed.getTime(), oldestTime);
+    oldestTime = Math.min(
+      phrase.flashcard.lastTimeReviewed.getTime(),
+      oldestTime,
+    );
 
     // 4. Update mostIncorrectReviews
     const incorrectCount: number = phrase.flashcard.last5Reviews.reduce<number>(
-      (acc: number, cur: boolean) => {
-        if (!cur) acc++;
+      (acc: number, cur: number) => {
+        acc += cur;
         return acc;
       },
       0,
@@ -39,14 +42,14 @@ export default (
       // 6. Compute time component
       const timeComponent: number =
         1 -
-        (phrase.flashcard.lastReviewed.getTime() - oldestTime) /
+        (phrase.flashcard.lastTimeReviewed.getTime() - oldestTime) /
           (now - oldestTime);
 
       // 7. Compute incorrectness component
       const incorrectCount: number =
         phrase.flashcard.last5Reviews.reduce<number>(
-          (acc: number, cur: boolean) => {
-            if (!cur) acc++;
+          (acc: number, cur: number) => {
+            acc += cur;
             return acc;
           },
           0,

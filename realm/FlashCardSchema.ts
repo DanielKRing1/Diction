@@ -2,14 +2,16 @@ import Realm, {ObjectSchema} from 'realm';
 
 // REALM OBJECT
 export interface FlashcardObj {
-  last5Reviews: boolean[];
-  lastReviewed: Date;
+  // Note: between 0 (correct) and 1 (entirely incorrect)
+  last5Reviews: number[];
+  lastTimeReviewed: Date;
 }
 
 // CLASS
 class Flashcard extends Realm.Object implements FlashcardObj {
-  last5Reviews!: boolean[];
-  lastReviewed!: Date;
+  // Note: between 0 (correct) and 1 (entirely incorrect)
+  last5Reviews!: number[];
+  lastTimeReviewed!: Date;
 
   // SCHEMA
 
@@ -18,8 +20,9 @@ class Flashcard extends Realm.Object implements FlashcardObj {
     name: Flashcard.FLASHCARD_SCHEMA_NAME,
     embedded: true,
     properties: {
-      last5Reviews: {type: 'list', objectType: 'boolean', default: () => []},
-      lastReviewed: {type: 'date', default: () => new Date()},
+      // Note: between 0 (correct) and 1 (entirely incorrect)
+      last5Reviews: {type: 'list', objectType: 'float', default: () => []},
+      lastTimeReviewed: {type: 'date', default: () => new Date()},
     },
   };
 
@@ -29,7 +32,7 @@ class Flashcard extends Realm.Object implements FlashcardObj {
     return {
       // 1. Fill in default Realm Object fields
       last5Reviews: [],
-      lastReviewed: new Date(),
+      lastTimeReviewed: new Date(),
     };
   }
 }

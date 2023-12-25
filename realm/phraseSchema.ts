@@ -10,21 +10,24 @@ type FetchParams = {
   sl: SourceLanguage;
   tl: TargetLanguage;
 };
+interface GenerateParams {
+  sText: string;
+
+  groupId: Realm.BSON.ObjectId;
+  tags: string[];
+}
+
 interface TranslationData {
   tText: string;
   tRomanization: string;
   tSpeech64: string;
 }
 
-interface GenerateParams extends TranslationData {
-  sText: string;
-
-  group: Realm.BSON.ObjectId;
-  tags: string[];
-}
-
 // REALM OBJECT
-export interface PhraseObj extends GenerateParams {
+export interface PhraseObj
+  extends FetchParams,
+    GenerateParams,
+    TranslationData {
   _id: Realm.BSON.ObjectId;
   createdAt: Date;
 
@@ -36,12 +39,14 @@ class Phrase extends Realm.Object implements PhraseObj {
   _id!: Realm.BSON.ObjectId;
   createdAt!: Date;
 
+  sl!: SourceLanguage;
+  tl!: TargetLanguage;
   sText!: string;
   tText!: string;
   tRomanization!: string;
   tSpeech64!: string;
 
-  group!: Realm.BSON.ObjectId;
+  groupId!: Realm.BSON.ObjectId;
   tags!: string[];
 
   flashcard!: FlashcardObj;
@@ -56,6 +61,8 @@ class Phrase extends Realm.Object implements PhraseObj {
       _id: {type: 'objectId', default: () => new Realm.BSON.ObjectId()},
       createdAt: {type: 'date', default: () => new Date()},
 
+      sl: 'string',
+      tl: 'string',
       sText: 'string',
       tText: 'string',
       tRomanization: 'string',
@@ -89,7 +96,7 @@ class Phrase extends Realm.Object implements PhraseObj {
     gParams: GenerateParams,
   ): Promise<PhraseObj> {
     const tData: TranslationData = await this.fetch(gParams.sText, fParams);
-    const phraseObj: PhraseObj = this.generate(tData, gParams);
+    const phraseObj: PhraseObj = this.generate(tData, fParams, gParams);
 
     return realm.write(() => {
       return realm.create(this.PHRASE_SCHEMA_NAME, phraseObj);
@@ -120,6 +127,7 @@ class Phrase extends Realm.Object implements PhraseObj {
 
   private static generate(
     tData: TranslationData,
+    fParams: FetchParams,
     gParams: GenerateParams,
   ): PhraseObj {
     return {
@@ -133,9 +141,26 @@ class Phrase extends Realm.Object implements PhraseObj {
       // 3. Add fetched fields
       ...tData,
 
-      // 4. Add user fields
+      // 4. Add fetch params
+      ...fParams,
+
+      // 5. Add user fields
       ...gParams,
     };
+  }
+
+  static delete(realm: Realm, phraseId: Realm.BSON.ObjectId) {
+    // 1. Get PhraseObj
+    const phraseObj: PhraseObj | null = realm.objectForPrimaryKey(
+      this.PHRASE_SCHEMA_NAME,
+      phraseId,
+    );
+    if (phraseId === null) return;
+
+    realm.write(() => {
+      // 2. Delete PhraseObj
+      realm.delete(phraseObj);
+    });
   }
 }
 
