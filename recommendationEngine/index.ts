@@ -86,23 +86,25 @@ type PhraseChallenge = string[];
  * @param recs
  */
 export const getPhraseChallenge = (
-  index: number,
+  selectedIndex: number,
   recs: Phrase[],
 ): PhraseChallenge => {
+  if (recs.length === 0 || !recs[selectedIndex]) return [];
+
   const wordSet: Set<string> = new Set();
 
   // 1. Track "correct" words
-  const correctWords: string[] = recs[index].tRomanization.split(' ');
+  const correctWords: string[] = recs[selectedIndex].tRomanization.split(' ');
   correctWords.forEach(word => wordSet.add(word));
 
   // 2. Track "incorrect" words
   const incorrectWords: string[] = [];
   for (let i = 0; i < recs.length; i++) {
     // i. Ignore chosen Phrase
-    if (i === index) continue;
+    if (i === selectedIndex) continue;
 
     // ii. Create list of potentially incorrect words from Phrase
-    const phrase: Phrase = recs[index];
+    const phrase: Phrase = recs[i];
     const phraseWords: string[] = phrase.tRomanization.split(' ');
     shuffle(phraseWords);
 
@@ -131,4 +133,8 @@ export const getPhraseChallenge = (
   shuffle(allWords);
 
   return allWords;
+};
+
+export const verifyChallenge = (expected: string, answer: string[]) => {
+  return answer.join(' ') == expected;
 };

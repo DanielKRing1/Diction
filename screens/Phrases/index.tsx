@@ -10,12 +10,12 @@ type Props = {};
 export default (props: Props) => {
   return (
     <>
+      <Flashcards />
+
       <Back />
       <GroupHeader />
       <Create />
       <Read />
-
-      <Flashcards />
     </>
   );
 };

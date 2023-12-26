@@ -114,7 +114,7 @@ class Phrase extends Realm.Object implements PhraseObj {
     // 3. Return fetched translation data
     return {
       tText: tt,
-      tRomanization: tr,
+      tRomanization: tr.toLowerCase(),
       tSpeech64: audio64,
     };
   }
